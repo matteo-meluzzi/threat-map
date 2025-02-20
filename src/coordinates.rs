@@ -1,4 +1,4 @@
-use crate::N;
+use crate::{direction::Direction, N};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Copy)]
 pub struct BotCentricCoordinate {
@@ -49,6 +49,19 @@ impl BotCentricCoordinate {
 
     pub fn distance(&self, other: &BotCentricCoordinate) -> i32 {
         self.x.abs_diff(other.x) as i32 + self.y.abs_diff(other.y) as i32
+    }
+
+    fn rotate_right(&self) -> BotCentricCoordinate {
+        BotCentricCoordinate { x: self.y, y: -self.x }
+    }
+
+    pub fn rotate(&self, direction: &Direction) -> BotCentricCoordinate {
+        match direction {
+            Direction::Front => *self,
+            Direction::Right => self.rotate_right(),
+            Direction::Back => self.rotate_right().rotate_right(),
+            Direction::Left => self.rotate_right().rotate_right().rotate_right()
+        }
     }
 }
 
