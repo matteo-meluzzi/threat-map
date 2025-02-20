@@ -1,14 +1,22 @@
 #![no_std]
+#![feature(generic_const_exprs)]
 
-struct ThreatMap<const N: usize> {
-    map: [[i32; N]; N]
+use threat_map::ThreatMap;
+
+pub mod coordinates;
+pub mod threat_map;
+pub mod greedy_next_move;
+
+pub const N: usize = 9;
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Orientation {
+    North, South, East, West
 }
 
-impl<const N: usize> ThreatMap<N> {
-    fn new(read_scan_at: &impl Fn(i8, i8) -> char) -> Self {
-        let mut map = [[i32::MAX; N]; N];
-        ThreatMap { map }
-    }
+#[derive(Debug, PartialEq, Eq)]
+pub enum Move {
+    Front, Back, Right, Left
 }
 
 #[cfg(test)]
