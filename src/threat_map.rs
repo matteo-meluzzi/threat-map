@@ -1,10 +1,10 @@
-use crate::coordinates::BotCentricCoordinate;
+use crate::coordinates::Coordinate;
 use crate::N;
 use crate::orientation::Orientation;
 
 pub struct ThreatMap {
     map: [i32; N * N],
-    orientation: Orientation
+    pub orientation: Orientation,
 }
 
 impl ThreatMap {
@@ -16,7 +16,7 @@ impl ThreatMap {
         self.map.fill(i32::MAX);
     }
 
-    pub fn at(&self, coords: BotCentricCoordinate, bot_orientation: Orientation) -> i32 {
+    pub fn at(&self, coords: Coordinate, bot_orientation: Orientation) -> i32 {
         let direction = bot_orientation.relative_to(self.orientation);
         match coords.rotate(&direction).to_index() {
             Some(index) => self.map[index],
@@ -28,11 +28,11 @@ impl ThreatMap {
         self.orientation = orientation;
     }
 
-    pub fn calculate(&mut self, bot_coords: &[BotCentricCoordinate]) {
+    pub fn calculate(&mut self, bot_coords: &[Coordinate]) {
         self.reset();
 
         for index in 0..(N * N) {
-            let current_coord = BotCentricCoordinate::from_index(index).unwrap();
+            let current_coord = Coordinate::from_index(index).unwrap();
             for bot_coord in bot_coords {
                 let distance = current_coord.distance(bot_coord);
                 self.map[index] = self.map[index].min(distance)
@@ -40,9 +40,9 @@ impl ThreatMap {
         }
     }
 
-    pub fn mask_border(&mut self, is_border: &impl Fn(BotCentricCoordinate) -> bool) {
+    pub fn mask_border(&mut self, is_border: &impl Fn(Coordinate) -> bool) {
         for index in 0..(N * N) {
-            let current_coord = BotCentricCoordinate::from_index(index).unwrap();
+            let current_coord = Coordinate::from_index(index).unwrap();
             if is_border(current_coord) {
                 self.map[index] = 0;
             }
@@ -59,41 +59,41 @@ mod threat_map_tests {
         let mut threat_map = ThreatMap::new(Orientation::North);
         for y in -1..=1 {
             for x in -1..=1 {
-                assert_eq!(threat_map.at(BotCentricCoordinate::new(x, y), Orientation::North), i32::MAX);
+                assert_eq!(threat_map.at(Coordinate::new(x, y), Orientation::North), i32::MAX);
             }
         }
 
-        let bot_coords = [BotCentricCoordinate::new(0, 0)];
+        let bot_coords = [Coordinate::new(0, 0)];
         threat_map.calculate(&bot_coords);
 
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(0, 0), Orientation::North), 0);
+        assert_eq!(threat_map.at(Coordinate::new(0, 0), Orientation::North), 0);
 
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(-1, 0), Orientation::North), 1);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(0, -1), Orientation::North), 1);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(0, 1), Orientation::South), 1);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(0, 1), Orientation::North), 1);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(1, 0), Orientation::North), 1);
+        assert_eq!(threat_map.at(Coordinate::new(-1, 0), Orientation::North), 1);
+        assert_eq!(threat_map.at(Coordinate::new(0, -1), Orientation::North), 1);
+        assert_eq!(threat_map.at(Coordinate::new(0, 1), Orientation::South), 1);
+        assert_eq!(threat_map.at(Coordinate::new(0, 1), Orientation::North), 1);
+        assert_eq!(threat_map.at(Coordinate::new(1, 0), Orientation::North), 1);
 
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(-1, -1), Orientation::North), 2);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(1, 1), Orientation::North), 2);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(1, -1), Orientation::North), 2);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(-1, 1), Orientation::North), 2);
+        assert_eq!(threat_map.at(Coordinate::new(-1, -1), Orientation::North), 2);
+        assert_eq!(threat_map.at(Coordinate::new(1, 1), Orientation::North), 2);
+        assert_eq!(threat_map.at(Coordinate::new(1, -1), Orientation::North), 2);
+        assert_eq!(threat_map.at(Coordinate::new(-1, 1), Orientation::North), 2);
 
-        let bot_coords = [BotCentricCoordinate::new(-1, 1)];
+        let bot_coords = [Coordinate::new(-1, 1)];
         threat_map.calculate(&bot_coords);
 
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(-1, 1), Orientation::North), 0);
+        assert_eq!(threat_map.at(Coordinate::new(-1, 1), Orientation::North), 0);
 
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(0, 1), Orientation::North), 1);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(-1, 0), Orientation::North), 1);
+        assert_eq!(threat_map.at(Coordinate::new(0, 1), Orientation::North), 1);
+        assert_eq!(threat_map.at(Coordinate::new(-1, 0), Orientation::North), 1);
 
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(0, 0), Orientation::North), 2);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(-1, -1), Orientation::North), 2);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(1, 1), Orientation::North), 2);
+        assert_eq!(threat_map.at(Coordinate::new(0, 0), Orientation::North), 2);
+        assert_eq!(threat_map.at(Coordinate::new(-1, -1), Orientation::North), 2);
+        assert_eq!(threat_map.at(Coordinate::new(1, 1), Orientation::North), 2);
 
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(1, 0), Orientation::North), 3);
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(0, -1), Orientation::North), 3);
+        assert_eq!(threat_map.at(Coordinate::new(1, 0), Orientation::North), 3);
+        assert_eq!(threat_map.at(Coordinate::new(0, -1), Orientation::North), 3);
 
-        assert_eq!(threat_map.at(BotCentricCoordinate::new(1, -1), Orientation::North), 4);
+        assert_eq!(threat_map.at(Coordinate::new(1, -1), Orientation::North), 4);
     }
 }
