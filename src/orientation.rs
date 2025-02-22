@@ -25,7 +25,7 @@ impl Orientation {
         }
     }
 
-    pub fn relative_to(&self, other: Orientation) -> Direction {
+    pub fn direction_relative_to(&self, other: Orientation) -> Direction {
         match self.integer_value() - other.integer_value() {
             3 => Direction::Left,
             2 => Direction::Back,
@@ -63,9 +63,9 @@ mod tests {
 
     #[test]
     fn test1() {
-        assert_eq!(Orientation::West.relative_to(Orientation::North), Direction::Left);
-        assert_eq!(Orientation::South.relative_to(Orientation::North), Direction::Back);
-        assert_eq!(Orientation::West.relative_to(Orientation::East), Direction::Back);
-        assert_eq!(Orientation::North.relative_to(Orientation::West), Direction::Right);
+        assert_eq!(Orientation::West.direction_relative_to(Orientation::North), Direction::Left);
+        assert_eq!(Orientation::South.direction_relative_to(Orientation::North), Direction::Back);
+        assert_eq!(Orientation::West.direction_relative_to(Orientation::East), Direction::Back);
+        assert_eq!(Orientation::North.direction_relative_to(Orientation::West), Direction::Right);
     }
 }

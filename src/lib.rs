@@ -7,5 +7,6 @@ pub mod threat_map;
 pub mod greedy_next_move;
 pub mod direction;
 pub mod orientation;
+pub mod robot_position;
 
 pub const N: usize = 9;
