@@ -1,3 +1,5 @@
+use core::ops::{Add, Neg, Sub};
+
 use crate::{direction::Direction, orientation::Orientation, N};
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Copy)]
@@ -8,12 +10,6 @@ pub struct Coordinate {
 
 impl Coordinate {
     pub fn new(x: i8, y: i8) -> Self {
-        let bound = N as i8 / 2;
-        assert!(x >= -bound);
-        assert!(y >= -bound);
-        assert!(x <= bound);
-        assert!(y <= bound);
-
         Coordinate { x, y }
     }
 
@@ -47,7 +43,7 @@ impl Coordinate {
 
     }
 
-    pub fn distance(&self, other: &Coordinate) -> i32 {
+    pub fn distance(&self, other: Coordinate) -> i32 {
         self.x.abs_diff(other.x) as i32 + self.y.abs_diff(other.y) as i32
     }
 
@@ -103,6 +99,30 @@ impl Coordinate {
     }
 }
 
+impl Add for Coordinate {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Coordinate::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+impl Neg for Coordinate {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Coordinate::new(-self.x, -self.y)
+    }
+}
+
+impl Sub for Coordinate {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        self + (-rhs)
+    }
+}
+
 #[cfg(test)]
 mod coordinate_tests {
     use super::*;
@@ -146,5 +166,11 @@ mod coordinate_tests {
         let c1 = Coordinate::new(0, 3);
         assert_eq!(Coordinate::new(3, 0), c1.rotate_right());
 
+    }
+
+    #[test]
+    fn test4() {
+        let c = Coordinate::new(1, -2) + Coordinate::new(3, 1);
+        assert_eq!(c, Coordinate::new(4, -1));
     }
 }

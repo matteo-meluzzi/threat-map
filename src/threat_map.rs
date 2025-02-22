@@ -1,24 +1,9 @@
-use core::fmt::{Debug, Write};
-
 use crate::coordinates::Coordinate;
+use crate::enemy_position::EnemyPositions;
 use crate::N;
 
 pub struct ThreatMap {
     map: [i32; N * N],
-}
-
-impl Debug for ThreatMap {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        for index in 0..(N * N) {
-            let current_coord = Coordinate::from_index(index).unwrap();
-            f.write_fmt(format_args!("{} ", self.map[index]))?;
-            if current_coord.x == N as i8 - 1 {
-                f.write_char('\n')?;
-            } 
-        }  
-
-        core::fmt::Result::Ok(())
-    }
 }
 
 impl ThreatMap {
@@ -37,16 +22,41 @@ impl ThreatMap {
         }
     }
 
-    pub fn calculate(&mut self, bot_coords: &[Coordinate]) {
+    fn calculate(&mut self, bot_coords: &[Coordinate]) {
         self.reset();
 
         for index in 0..(N * N) {
             let current_coord = Coordinate::from_index(index).unwrap();
-            for bot_coord in bot_coords {
+            for &bot_coord in bot_coords {
                 let distance = current_coord.distance(bot_coord);
                 self.map[index] = self.map[index].min(distance)
             }
         }
+    }
+
+    pub fn calculate_with_previous_location(&mut self, current_enemy_positions: &EnemyPositions, previous_enemy_positions: &EnemyPositions) {
+        let mut future_enemy_positions = [Coordinate::new(0, 0); N * N];
+        let mut future_enemy_count = 0;
+        for current_position in current_enemy_positions {
+            match previous_enemy_positions.get_position_of(current_position.id) {
+                Some(previous_position) => {
+                    let future_position = current_position.position + current_position.position - previous_position;
+                    // we take the worst case scenario of the closest point to us
+                    if future_position.distance(Coordinate::new(0, 0)) < current_position.position.distance(Coordinate::new(0, 0)) { 
+                        future_enemy_positions[future_enemy_count] = future_position;
+                    } else {
+                        future_enemy_positions[future_enemy_count] = current_position.position;
+                    }
+                    future_enemy_count += 1;
+                }
+                None => {
+                    future_enemy_positions[future_enemy_count] = current_position.position;
+                    future_enemy_count += 1;
+                }
+            }
+        }
+
+        self.calculate(&future_enemy_positions[..future_enemy_count]);
     }
 
     pub fn mask_border(&mut self, border_coord: Coordinate) {
