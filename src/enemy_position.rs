@@ -1,7 +1,7 @@
 use core::num::NonZero;
 
 use crate::coordinates::Coordinate;
-use crate::{MAX_NUM_ENEMIES, N};
+use crate::MAX_NUM_ENEMIES;
 
 #[derive(Debug, Clone, Copy)]
 pub struct EnemyPosition {
@@ -91,26 +91,19 @@ mod test {
     #[test]
     fn test1() {
         let mut old_enemy_positions = EnemyPositions::new();
-        old_enemy_positions.push(EnemyPosition::new(1, Coordinate::new(0, 0)));
+        old_enemy_positions.push(EnemyPosition::new(NonZero::new(1).unwrap(), Coordinate::new(0, 0)));
 
         let mut current_enemy_positions = EnemyPositions::new();
-        current_enemy_positions.push(EnemyPosition::new(1, Coordinate::new(1, 0)));
-        current_enemy_positions.push(EnemyPosition::new(2, Coordinate::new(2, 0)));
+        current_enemy_positions.push(EnemyPosition::new(NonZero::new(1).unwrap(), Coordinate::new(1, 0)));
+        current_enemy_positions.push(EnemyPosition::new(NonZero::new(2).unwrap(), Coordinate::new(2, 0)));
 
         let robot_position = RobotPosition{position: Coordinate::new(2, 0), orientation: Orientation::East};
         old_enemy_positions.use_origin(robot_position.position);
         
-        let old_1 = old_enemy_positions.get_position_of(1).unwrap();
-        let curr_1 = current_enemy_positions.get_position_of(1).unwrap();
+        let old_1 = old_enemy_positions.get_position_of(NonZero::new(1).unwrap()).unwrap();
+        let curr_1 = current_enemy_positions.get_position_of(NonZero::new(1).unwrap()).unwrap();
 
         assert_eq!(old_1.distance(curr_1), 3);
     }
 
-    #[test]
-    fn test2() {
-        let mut old_enemy_positions = EnemyPositions::new();
-        for i in &old_enemy_positions {
-
-        }
-    }
 }

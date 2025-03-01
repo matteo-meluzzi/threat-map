@@ -22,7 +22,7 @@ impl ThreatMap {
         }
     }
 
-    fn calculate(&mut self, bot_coords: &[Coordinate]) {
+    pub fn calculate(&mut self, bot_coords: &[Coordinate]) {
         self.reset();
 
         for index in 0..(N * N) {

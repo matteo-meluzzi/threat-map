@@ -1,4 +1,4 @@
-use core::ops::{Add, Neg, Sub};
+use core::ops::{Add, AddAssign, Neg, Sub};
 
 use crate::{direction::Direction, orientation::Orientation, N};
 
@@ -97,6 +97,42 @@ impl Coordinate {
     pub fn orientate_north(&self, orientation: Orientation) -> Coordinate {
         self.rotate(Orientation::North.direction_relative_to(orientation))
     }
+
+    pub fn is_corner(&self) -> bool {
+        (self.x == -(N as i8)/2 && self.y == -(N as i8)/2) ||
+        (self.x == -(N as i8)/2 && self.y ==  (N as i8)/2) || 
+        (self.x ==  (N as i8)/2 && self.y == -(N as i8)/2) || 
+        (self.x ==  (N as i8)/2 && self.y ==  (N as i8)/2)
+    }
+
+    pub fn normalized(&self) -> Coordinate {
+        if self.x.abs() > self.y.abs() {
+            if self.x > 0 {
+                Coordinate::new(1, 0)
+            } else if self.x < 0 {
+                Coordinate::new(-1, 0)
+            } else {
+                // because 
+                // y.abs() >= 0
+                // x.abs() > y.abs()
+                // =>
+                // x.abs() >= y.abs() + 1
+                // =>
+                // x.abs() >= 0 + 1
+                // =>
+                // x > 1 || x < 1
+                unreachable!()
+            }
+        } else {
+            if self.y > 0 {
+                Coordinate::new(0, 1)
+            } else if self.y < 0 {
+                Coordinate::new(0, -1)
+            } else {
+                Coordinate::new(0, 0)
+            }
+        }
+    }
 }
 
 impl Add for Coordinate {
@@ -120,6 +156,15 @@ impl Sub for Coordinate {
 
     fn sub(self, rhs: Self) -> Self::Output {
         self + (-rhs)
+    }
+}
+
+impl AddAssign for Coordinate {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y
+        }
     }
 }
 
